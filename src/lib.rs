@@ -72,17 +72,19 @@ mod tests {
 
     #[test]
     fn insert_adds_node_to_middle_of_list() {
-        let mut node = LinkedListNode::new("tonia");
-        node.insert(RefCell::new(LinkedListNode::new("nic")));
-        node.insert(RefCell::new(LinkedListNode::new("bill")));
+        let mut node = Rc::new(RefCell::new(LinkedListNode::new("tonia")));
+        node.borrow_mut().insert(RefCell::new(LinkedListNode::new("nic")));
+        node.borrow_mut().insert(RefCell::new(LinkedListNode::new("bill")));
 
-        let second_node = Rc::clone(&node.get_next().expect(""));
+        let names = ["tonia", "bill", "nic"];
 
-        assert_eq!(*Rc::clone(&second_node).borrow().get_value(), "bill".to_string());
-
-        let third_node = Rc::clone(&second_node).borrow().get_next().expect("");
-
-        assert_eq!(*Rc::clone(&third_node).borrow().get_value(), "nic".to_string());
+        for name in names.iter() {
+            assert_eq!(*Rc::clone(&node).borrow().get_value(), name.to_string());
+            match Rc::clone(&node).borrow().get_next() {
+                Some(new_node) => node = new_node,
+                None => break
+            }
+        }
     }
 
     #[test]
