@@ -62,6 +62,48 @@ mod tests {
     }
 
     #[test]
+    fn next_gives_ref() {
+        let mut node = Rc::new(RefCell::new(LinkedListNode {
+            value: String::from("tonia"),
+            next: Some(
+                Rc::new(
+                    RefCell::new(
+                        LinkedListNode {
+                            value: String::from("nic"),
+                            next: Some(
+                                Rc::new(
+                                    RefCell::new(
+                                        LinkedListNode {
+                                            value: String::from("bill"),
+                                            next: None,
+                                        }
+                                    )
+                                )
+                            )
+                        }
+                    )
+                )
+            )
+        }));
+
+
+
+        let names = ["tonia", "nic",  "bill"];
+
+        for name in names.iter() {
+            assert_eq!(*Rc::clone(&node).borrow().get_value(), name.to_string());
+            match Rc::clone(&node).borrow().get_next() {
+                Some(new_node) => node = new_node,
+                None => break
+            }
+        }
+        // match node.get_next() {
+        //     Some(ref next_node) => assert_eq!("nic", next_node.borrow().get_value()),
+        //     None => assert_eq!(1, 2)
+        // }
+    }
+
+    #[test]
     fn insert_adds_node_to_end_of_list() {
         let mut node = LinkedListNode::new("tonia");
         node.insert(RefCell::new(LinkedListNode::new("nic")));
@@ -84,22 +126,6 @@ mod tests {
                 Some(new_node) => node = new_node,
                 None => break
             }
-        }
-    }
-
-    #[test]
-    fn next_gives_ref() {
-        let node = LinkedListNode {
-            value: String::from("tonia"),
-            next: Some(Rc::new(RefCell::new(LinkedListNode {
-                value: String::from("nic"),
-                next: None
-            })))
-        };
-
-        match node.get_next() {
-            Some(ref next_node) => assert_eq!("nic", next_node.borrow().get_value()),
-            None => assert_eq!(1, 2)
         }
     }
 }
