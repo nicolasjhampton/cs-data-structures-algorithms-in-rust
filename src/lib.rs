@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 
 pub struct LinkedListNode {
@@ -14,29 +14,45 @@ impl LinkedListNode {
         }
     }
 
-    pub fn get_next(&self) -> Option<Rc<RefCell<LinkedListNode>>> {
+    pub fn next(&self) -> Option<Rc<RefCell<LinkedListNode>>> {
         match &self.next {
             Some(node) => Some(Rc::clone(&node)),
             None => None
         }
     }
 
-    pub fn set_next(&mut self, next_node: Rc<RefCell<LinkedListNode>>) {
-        self.next = Some(Rc::clone(&next_node));
-    }
-
-    pub fn insert(&mut self, new_node: RefCell<LinkedListNode>) {
-        match self.get_next() {
-            Some(next_node) => {
-                new_node.borrow_mut().set_next(Rc::clone(&next_node));
-            },
-            None => ()
-        }
-        self.set_next(Rc::new(new_node));
-    }
-
-    pub fn get_value(&self) -> String {
+    pub fn value(&self) -> String {
         self.value.clone()
+    }
+}
+
+struct LinkedList {
+    head: Weak<RefCell<LinkedListNode>>,
+    curr: Option<Rc<RefCell<LinkedListNode>>>
+}
+
+// impl LinkedList {
+//     fn new() {
+
+//     }
+
+//     fn add() {
+
+//     }
+// }
+
+impl Iterator for LinkedList {
+    type Item = Rc<RefCell<LinkedListNode>>;
+
+    fn next(&mut self) -> Option<Rc<RefCell<LinkedListNode>>>  {
+        self.curr = match &self.curr {
+            Some(curr) => (*curr.borrow()).next(),
+            None => None
+        };
+        match &self.curr {
+            Some(curr) => Some(Rc::clone(curr)),
+            None => None
+        }
     }
 }
 
@@ -86,46 +102,29 @@ mod tests {
             )
         }));
 
-
-
         let names = ["tonia", "nic",  "bill"];
 
         for name in names.iter() {
-            assert_eq!(*Rc::clone(&node).borrow().get_value(), name.to_string());
-            match Rc::clone(&node).borrow().get_next() {
+            assert_eq!(*Rc::clone(&node).borrow().value(), name.to_string());
+            match Rc::clone(&node).borrow().next() {
                 Some(new_node) => node = new_node,
                 None => break
             }
         }
-        // match node.get_next() {
-        //     Some(ref next_node) => assert_eq!("nic", next_node.borrow().get_value()),
-        //     None => assert_eq!(1, 2)
-        // }
     }
 
     #[test]
-    fn insert_adds_node_to_end_of_list() {
-        let mut node = LinkedListNode::new("tonia");
-        node.insert(RefCell::new(LinkedListNode::new("nic")));
-        if let Some(next) = node.get_next() {
-            assert_eq!("nic", next.borrow().get_value())
-        }
-    }
-
-    #[test]
-    fn insert_adds_node_to_middle_of_list() {
-        let mut node = Rc::new(RefCell::new(LinkedListNode::new("tonia")));
-        node.borrow_mut().insert(RefCell::new(LinkedListNode::new("nic")));
-        node.borrow_mut().insert(RefCell::new(LinkedListNode::new("bill")));
-
-        let names = ["tonia", "bill", "nic"];
-
-        for name in names.iter() {
-            assert_eq!(*Rc::clone(&node).borrow().get_value(), name.to_string());
-            match Rc::clone(&node).borrow().get_next() {
-                Some(new_node) => node = new_node,
-                None => break
-            }
+    fn linked_list_is_iterator() {
+        let node = Rc::new(RefCell::new(LinkedListNode {
+            value: String::from("first"),
+            next: None
+        }));
+        let mut list = LinkedList {
+            head: Rc::downgrade(&node),
+            curr: Some(node)
+        };
+        for node in list {
+            assert_eq!(*node.borrow().value(), "first".to_string());
         }
     }
 }
