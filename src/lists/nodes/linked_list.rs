@@ -6,10 +6,10 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(value: &str) -> Node {
+    pub fn new(value: &str, next: Option<Rc<RefCell<Node>>>) -> Node {
         Node {
             value: String::from(value),
-            next: None
+            next
         }
     }
 
@@ -42,34 +42,23 @@ mod tests {
 
     #[test]
     fn new_creates_node() {
-        let node = Node::new("tonia");
+        let node = Node::new("tonia", None);
         assert_eq!("tonia", node.value);
     }
 
     #[test]
     fn next_gives_ref() {
-        let mut node = Rc::new(RefCell::new(Node {
-            value: String::from("tonia"),
-            next: Some(
-                Rc::new(
-                    RefCell::new(
-                        Node {
-                            value: String::from("nic"),
-                            next: Some(
-                                Rc::new(
-                                    RefCell::new(
-                                        Node {
-                                            value: String::from("bill"),
-                                            next: None,
-                                        }
-                                    )
-                                )
-                            )
-                        }
-                    )
-                )
-            )
-        }));
+        let mut node = Rc::new(RefCell::new(
+            Node::new("tonia", Some(
+                Rc::new(RefCell::new(
+                    Node::new("nic", Some(
+                        Rc::new(RefCell::new(
+                            Node::new("bill", None)
+                        ))
+                    ))
+                ))
+            ))
+        ));
 
         let names = ["tonia", "nic",  "bill"];
 
