@@ -47,6 +47,12 @@ mod tests {
     }
 
     #[test]
+    fn value_returns_string() {
+        let node = Node::new("tonia", None);
+        assert_eq!("tonia".to_string(), node.value());
+    }
+
+    #[test]
     fn next_gives_ref() {
         let mut node = Rc::new(RefCell::new(
             Node::new("tonia", Some(
