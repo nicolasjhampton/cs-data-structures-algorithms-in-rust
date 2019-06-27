@@ -13,9 +13,9 @@ impl BinaryTree {
         }
     }
 
-    fn walk_l_d_r(&self) {
-        self.root.borrow().walk_l_d_r();
-    }
+    // fn walk_l_d_r(&self) {
+    //     self.root.borrow().walk_l_d_r();
+    // }
 }
 
 #[cfg(test)]
