@@ -16,6 +16,16 @@ impl Node {
             right: None,
         }
     }
+
+    fn walk_l_d_r(&self) {
+        if let Some(child) = self.left {
+            child.borrow().walk_l_d_r();
+        };
+        println!("{}", self.data);
+        if let Some(child) = self.right {
+            child.borrow().walk_l_d_r();
+        };
+    }
 }
 
 #[cfg(test)]

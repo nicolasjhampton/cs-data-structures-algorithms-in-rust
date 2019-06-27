@@ -12,6 +12,10 @@ impl BinaryTree {
             root: Rc::new(RefCell::new(Node::new(initial_data)))
         }
     }
+
+    fn walk_l_d_r(&self) {
+        self.root.borrow().walk_l_d_r();
+    }
 }
 
 #[cfg(test)]
