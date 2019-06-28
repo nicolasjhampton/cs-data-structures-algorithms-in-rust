@@ -26,6 +26,22 @@ impl Node {
             None => ()
         };
     }
+
+    fn insert(&mut self, node: Rc<RefCell<Node>>) {
+        if self.data <= node.borrow().data {
+            if let Some(left) = &self.left {
+                left.borrow_mut().insert(Rc::clone(&node));
+            } else {
+                self.left = Some(Rc::clone(&node));
+            }
+        } else {
+            if let Some(right) = &self.right {
+                right.borrow_mut().insert(Rc::clone(&node));
+            } else {
+                self.right = Some(Rc::clone(&node));
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -65,8 +81,22 @@ mod tests {
         node5.borrow_mut().left = Some(Rc::clone(&node4));
         node5.borrow_mut().right = Some(Rc::clone(&node6));
         node3.borrow_mut().right = Some(Rc::clone(&node5));
+
         let mut arr : Vec<usize> = Vec::new();
         node3.borrow().walk_l_d_r(&mut arr);
+        for (i, j) in arr.iter().enumerate() {
+            assert_eq!(i, *j);
+        }
+    }
+
+    fn insert_keeps_binary_sort() {
+        let nodes : Vec<usize> = vec![2, 5, 0, 1, 4, 6];
+        let mut node3 = Node::new(3);
+        for i in nodes.iter() {
+            node3.insert(Rc::new(RefCell::new(Node::new(*i))));
+        }
+        let mut arr : Vec<usize> = Vec::new();
+        node3.walk_l_d_r(&mut arr);
         for (i, j) in arr.iter().enumerate() {
             assert_eq!(i, *j);
         }
