@@ -7,7 +7,7 @@ struct BinaryTree {
 }
 
 impl BinaryTree {
-    fn new(initial_data: i32) -> BinaryTree {
+    fn new(initial_data: usize) -> BinaryTree {
         BinaryTree {
             root: Rc::new(RefCell::new(Node::new(initial_data)))
         }
