@@ -2,6 +2,8 @@ use std::{ cell::RefCell, rc::{Rc, Weak}};
 
 use super::nodes::linked_list::Node;
 
+use super::List;
+
 pub struct LinkedList {
     pub head: RefCell<Weak<RefCell<Node>>>,
     pub curr: Option<Rc<RefCell<Node>>>
@@ -16,27 +18,14 @@ impl LinkedList {
             curr: Some(tail)
         }
     }
+}
 
-    #[allow(dead_code)]
-    fn add(&mut self, new_head: &str) {
-        let next = match self.curr {
+impl List for LinkedList {
+    fn curr(&self) -> Option<Rc<RefCell<Node>>> {
+        match self.curr {
             Some(ref curr) => Some(Rc::clone(curr)),
             None => None
-        };
-        let head_node = Node::new(new_head, next);
-        let head_ref = Rc::new(RefCell::new(head_node));
-        *self.head.borrow_mut() = Rc::downgrade(&head_ref);
-    }
-
-    fn remove(&mut self) {
-        let next = match self.curr {
-            Some(ref node) => node.borrow().next(),
-            None => None
-        };
-        if let Some(node) = next {
-            *self.head.borrow_mut() = Rc::downgrade(&node);
-            self.curr = Some(node);
-        };
+        }
     }
 }
 
@@ -83,8 +72,8 @@ mod tests {
     #[test]
     fn add_adds_element_to_list() {
         let mut list = LinkedList::new("first");
-        list.add("second");
-        list.add("third");
+        list.unshift("second");
+        list.unshift("third");
         let sequence = ["third", "second", "first"];
         for (index, node) in list.enumerate() {
             assert_eq!(*node.borrow().value(), sequence[index].to_string());
@@ -94,9 +83,9 @@ mod tests {
     #[test]
     fn remove_erases_element_from_list() {
         let mut list = LinkedList::new("first");
-        list.add("second");
-        list.add("third");
-        list.remove();
+        list.unshift("second");
+        list.unshift("third");
+        list.shift();
         let sequence = ["second", "first"];
         for (index, node) in list.enumerate() {
             assert_eq!(*node.borrow().value(), sequence[index].to_string());
