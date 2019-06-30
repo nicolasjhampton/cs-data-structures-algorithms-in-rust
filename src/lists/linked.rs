@@ -1,12 +1,12 @@
 use std::{ cell::RefCell, rc::{ Rc }};
 
-use super::nodes::linked_list::Node;
+use super::nodes::linked_list::{ Node, NodeRef };
 
 use super::Stack;
 
 #[derive(Debug)]
 pub struct LinkedList {
-    pub curr: Option<Rc<RefCell<Node>>>
+    pub curr: Option<NodeRef>
 }
 
 impl LinkedList {
@@ -20,15 +20,40 @@ impl LinkedList {
 }
 
 impl Stack for LinkedList {
-    fn set_curr(&mut self, node: Option<Rc<RefCell<Node>>>) {
+
+    type Reference = NodeRef;
+
+    fn set_curr(&mut self, node: Option<NodeRef>) {
         self.curr = node;
     }
 
-    fn current(&self) -> Option<Rc<RefCell<Node>>> {
+    fn current(&self) -> Option<NodeRef> {
         match self.curr {
             Some(ref curr) => Some(Rc::clone(curr)),
             None => None
         }
+    }
+
+    fn unshift(&mut self, data: &str) {
+        if let Some(current) = self.current() {
+            self.set_curr(Some(Node::new(data, Some(current))));
+        };
+    }
+
+    fn shift(&mut self) -> Option<String> {
+        let current_value = match self.current() {
+            Some(ref node) => Some(node.borrow().value()),
+            None => None
+        };
+        let next = match self.current() {
+            Some(ref node) => node.borrow().next(),
+            None => None
+        };
+        match next {
+            Some(ref node) => self.set_curr(Some(Rc::clone(node))),
+            None => self.set_curr(None)
+        };
+        current_value
     }
 }
 
