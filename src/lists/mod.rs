@@ -2,24 +2,34 @@ mod nodes;
 pub mod linked;
 
 use nodes::linked_list::Node;
-use std::{ cell::RefCell, rc::{Rc, Weak}};
+use std::{ cell::RefCell, rc::{Rc}};
 
-pub trait List: Iterator {
 
-    fn curr(&self) -> Option<Rc<RefCell<Node>>>;
+pub trait Stack: Iterator {
 
-    #[allow(dead_code)]
-    fn unshift(&mut self, new_head: &str) {
-        let next = match self.curr() {
-            Some(ref curr) => Some(Rc::clone(curr)),
-            None => None
+    fn current(&self) -> Option<Rc<RefCell<Node>>>;
+
+    fn set_curr(&mut self, node: Option<Rc<RefCell<Node>>>);
+
+    fn unshift(&mut self, data: &str) {
+        if let Some(current) = self.current() {
+            self.set_curr(Some(Rc::new(RefCell::new(Node::new(data, Some(current))))));
         };
     }
 
-    fn shift(&mut self) {
-        let next = match self.curr() {
+    fn shift(&mut self) -> Option<String> {
+        let current_value = match self.current() {
+            Some(ref node) => Some(node.borrow().value()),
+            None => None
+        };
+        let next = match self.current() {
             Some(ref node) => node.borrow().next(),
             None => None
         };
+        match next {
+            Some(ref node) => self.set_curr(Some(Rc::clone(node))),
+            None => self.set_curr(None)
+        };
+        current_value
     }
 }

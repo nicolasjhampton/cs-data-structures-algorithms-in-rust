@@ -1,21 +1,24 @@
 use std::{ cell::RefCell, rc::Rc };
 
+use super::{ NodeRef, RefExt, CreateRefExt };
+
+#[derive(Debug)]
 pub struct Node {
     pub value: String,
-    pub next: Option<Rc<RefCell<Node>>>
+    pub next: Option<NodeRef>
 }
 
 impl Node {
-    pub fn new(value: &str, next: Option<Rc<RefCell<Node>>>) -> Node {
+    pub fn new(value: &str, next: Option<NodeRef>) -> Node {
         Node {
             value: String::from(value),
             next
         }
     }
 
-    pub fn next(&self) -> Option<Rc<RefCell<Node>>> {
+    pub fn next(&self) -> Option<NodeRef> {
         match &self.next {
-            Some(node) => Some(Rc::clone(&node)),
+            Some(node) => Some(node.refer()),
             None => None
         }
     }
@@ -54,23 +57,17 @@ mod tests {
 
     #[test]
     fn next_gives_ref() {
-        let mut node = Rc::new(RefCell::new(
-            Node::new("tonia", Some(
-                Rc::new(RefCell::new(
-                    Node::new("nic", Some(
-                        Rc::new(RefCell::new(
-                            Node::new("bill", None)
-                        ))
-                    ))
-                ))
+        let mut node = NodeRef::new_ref("tonia", 
+            Some(NodeRef::new_ref("nic", 
+                Some(NodeRef::new_ref("bill", None))
             ))
-        ));
+        );
 
         let names = ["tonia", "nic",  "bill"];
 
         for name in names.iter() {
-            assert_eq!(*Rc::clone(&node).borrow().value(), name.to_string());
-            match Rc::clone(&node).borrow().next() {
+            assert_eq!(*Rc::clone(&node).value(), name.to_string());
+            match Rc::clone(&node).next() {
                 Some(new_node) => node = new_node,
                 None => break
             }
