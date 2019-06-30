@@ -5,8 +5,6 @@ use std::{ cell::RefCell, rc::Rc };
 
 use linked_list::Node;
 
-use doubly_linked_list::DoubleNode;
-
 pub trait RefExt {
     type Reference;
 

@@ -128,11 +128,12 @@ mod tests {
 
     #[test]
     fn next_gives_ref() {
-        let mut node = DoubleNode::new("tonia", 
-            Some( DoubleNode::new("nic", 
-                Some( DoubleNode::new("bill", None, None) ), None ) ), None);
-
-        println!("{:#?}", node);
+        let mut node = 
+        DoubleNode::new("tonia", Some( 
+            DoubleNode::new("nic", Some( 
+                DoubleNode::new("bill", None, None) 
+            ), None) 
+        ), None);
 
         let names = ["tonia", "nic",  "bill"];
 
