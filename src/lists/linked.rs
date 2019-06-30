@@ -84,7 +84,6 @@ mod tests {
         assert_eq!(third.unwrap(), "third".to_string());
         let sequence = ["second", "first"];
         for (index, node) in list.enumerate() {
-            println!("{}", node);
             assert_eq!(node, sequence[index].to_string());
         }
     }

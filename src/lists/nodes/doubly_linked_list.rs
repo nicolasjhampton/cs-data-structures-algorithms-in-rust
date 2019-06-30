@@ -5,6 +5,16 @@ use super::{ RefExt, DoubleRefExt, CreateDoubleRefExt };
 pub type DoubleNodeRef = Rc<RefCell<DoubleNode>>;
 pub type WeakDoubleNodeRef = Weak<RefCell<DoubleNode>>;
 
+impl CreateDoubleRefExt for DoubleNodeRef {
+    type WeakReference = WeakDoubleNodeRef;
+    type Reference = DoubleNodeRef;
+    type Node = DoubleNode;
+
+    fn from_node(node: DoubleNode) -> DoubleNodeRef {
+        Rc::new(RefCell::new(node))
+    }
+}
+
 impl RefExt for DoubleNodeRef {
     type Reference = DoubleNodeRef;
 
@@ -41,26 +51,24 @@ impl DoubleRefExt for DoubleNodeRef {
     }
 }
 
-impl CreateDoubleRefExt for DoubleNodeRef {
-    type WeakReference = WeakDoubleNodeRef;
-    type Reference = DoubleNodeRef;
-    type Node = DoubleNode;
-
-    fn from_node(node: DoubleNode) -> DoubleNodeRef {
-        Rc::new(RefCell::new(node))
-    }
-}
-
+/*
+ *  DoubleNode
+ * 
+ *  Lowest level of the Double Linked List
+ *  Returns only References of itself to hide
+ *  internals.
+ * 
+ */
 #[derive(Debug)]
 pub struct DoubleNode {
-    pub value: String,
-    pub next: Option<DoubleNodeRef>,
-    pub prev: Option<WeakDoubleNodeRef>,
+    value: String,
+    next: Option<DoubleNodeRef>,
+    prev: Option<WeakDoubleNodeRef>,
 }
 
 impl DoubleNode {
     pub fn new(value: &str, next: Option<DoubleNodeRef>, prev: Option<WeakDoubleNodeRef>) -> DoubleNodeRef {
-        let node_ref = DoubleNodeRef::from_node(
+        let mut node_ref = DoubleNodeRef::from_node(
             DoubleNode {
                 value: String::from(value),
                 next: None,
@@ -78,8 +86,9 @@ impl DoubleNode {
             };
         };
 
-        node_ref.borrow_mut().next = next;
-        node_ref.borrow_mut().prev = prev;
+        node_ref.set_next(next);
+        node_ref.set_prev(prev);
+
         node_ref
     }
 
@@ -142,10 +151,29 @@ mod tests {
         let names = ["tonia", "nic",  "bill"];
 
         for name in names.iter() {
-            assert_eq!(*Rc::clone(&node).value(), name.to_string());
-            match Rc::clone(&node).next() {
-                Some(new_node) => node = new_node,
-                None => break
+            assert_eq!(node.value(), name.to_string());
+            if let Some(new_node) = node.next() {
+                node = new_node;
+            } else {
+                break;
+            }
+        }
+    }
+
+    #[test]
+    fn prev_gives_ref() {
+        let first_node = DoubleNode::new("tonia", None, None);
+        let second_node = DoubleNode::new("nic", None, Some(first_node.weak()));
+        let mut last_node = DoubleNode::new("bill", None, Some(second_node.weak()));
+
+        let reverse_names = ["bill", "nic", "tonia"];
+
+        for name in reverse_names.iter() {
+            assert_eq!(last_node.value(), name.to_string());
+            if let Some(new_node) = last_node.prev() {
+                last_node = new_node.upgrade().unwrap();
+            } else {
+                break;
             }
         }
     }
