@@ -12,7 +12,7 @@ pub struct LinkedList {
 impl LinkedList {
     #[allow(dead_code)]
     fn new(start: &str) -> LinkedList {
-        let tail = Rc::new(RefCell::new(Node::new(start, None)));
+        let tail = Node::new(start, None);
         LinkedList {
             curr: Some(tail)
         }
@@ -47,7 +47,7 @@ mod tests {
 
     #[test]
     fn linked_list_is_iterator() {
-        let node = Rc::new(RefCell::new(Node::new("first", None)));
+        let node = Node::new("first", None);
         let list = LinkedList {
             curr: Some(node)
         };

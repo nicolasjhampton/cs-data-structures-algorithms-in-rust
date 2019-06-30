@@ -13,7 +13,7 @@ pub trait Stack: Iterator {
 
     fn unshift(&mut self, data: &str) {
         if let Some(current) = self.current() {
-            self.set_curr(Some(Rc::new(RefCell::new(Node::new(data, Some(current))))));
+            self.set_curr(Some(Node::new(data, Some(current))));
         };
     }
 

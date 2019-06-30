@@ -1,6 +1,37 @@
-use std::{ rc::Rc };
+use std::{ rc::Rc, cell::RefCell };
 
-use super::{ NodeRef, RefExt, CreateRefExt };
+use super::{ RefExt, CreateRefExt };
+
+pub type NodeRef = Rc<RefCell<Node>>;
+
+impl CreateRefExt for NodeRef {
+    type Node = Node;
+    type Reference = NodeRef;
+
+    fn from_node(node: Node) -> NodeRef {
+        Rc::new(RefCell::new(node))
+    }
+}
+
+impl RefExt for NodeRef {
+    type Reference = NodeRef;
+
+    fn next(&self) -> Option<NodeRef> {
+        self.borrow().next()
+    }
+
+    fn set_next(&mut self, next: Option<NodeRef>) {
+        self.borrow_mut().next = next;
+    }
+
+    fn value(&self) -> String {
+        self.borrow().value()
+    }
+
+    fn refer(&self) -> NodeRef {
+        Rc::clone(self)
+    }
+}
 
 #[derive(Debug)]
 pub struct Node {
@@ -9,11 +40,11 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(value: &str, next: Option<NodeRef>) -> Node {
-        Node {
+    pub fn new(value: &str, next: Option<NodeRef>) -> NodeRef {
+        NodeRef::from_node(Node {
             value: String::from(value),
             next
-        }
+        })
     }
 
     pub fn next(&self) -> Option<NodeRef> {
@@ -46,7 +77,7 @@ mod tests {
     #[test]
     fn new_creates_node() {
         let node = Node::new("tonia", None);
-        assert_eq!("tonia", node.value);
+        assert_eq!("tonia", node.value());
     }
 
     #[test]
@@ -57,9 +88,9 @@ mod tests {
 
     #[test]
     fn next_gives_ref() {
-        let mut node = NodeRef::new_ref("tonia", 
-            Some(NodeRef::new_ref("nic", 
-                Some(NodeRef::new_ref("bill", None))
+        let mut node = Node::new("tonia", 
+            Some(Node::new("nic", 
+                Some(Node::new("bill", None))
             ))
         );
 

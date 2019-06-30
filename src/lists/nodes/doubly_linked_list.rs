@@ -5,25 +5,15 @@ use super::{ RefExt, DoubleRefExt, CreateDoubleRefExt };
 pub type DoubleNodeRef = Rc<RefCell<DoubleNode>>;
 pub type WeakDoubleNodeRef = Weak<RefCell<DoubleNode>>;
 
-impl CreateDoubleRefExt for DoubleNodeRef {
-    type WeakReference = WeakDoubleNodeRef;
-    type Reference = DoubleNodeRef;
-    type Node = DoubleNode;
-
-    fn new_ref(value: &str, next: Option<DoubleNodeRef>, prev: Option<WeakDoubleNodeRef>) -> DoubleNodeRef {
-        DoubleNode::new(value, next, prev)
-    }
-
-    fn from_node(node: DoubleNode) -> DoubleNodeRef {
-        Rc::new(RefCell::new(node))
-    }
-}
-
 impl RefExt for DoubleNodeRef {
     type Reference = DoubleNodeRef;
 
     fn next(&self) -> Option<DoubleNodeRef> {
         self.borrow().next()
+    }
+
+    fn set_next(&mut self, next: Option<DoubleNodeRef>) {
+        self.borrow_mut().next = next;
     }
 
     fn value(&self) -> String {
@@ -42,8 +32,22 @@ impl DoubleRefExt for DoubleNodeRef {
         self.borrow().prev()
     }
 
+    fn set_prev(&mut self, prev: Option<Self::WeakReference>) {
+        self.borrow_mut().prev = prev;
+    }
+
     fn weak(&self) -> WeakDoubleNodeRef {
         Rc::downgrade(self)
+    }
+}
+
+impl CreateDoubleRefExt for DoubleNodeRef {
+    type WeakReference = WeakDoubleNodeRef;
+    type Reference = DoubleNodeRef;
+    type Node = DoubleNode;
+
+    fn from_node(node: DoubleNode) -> DoubleNodeRef {
+        Rc::new(RefCell::new(node))
     }
 }
 
