@@ -123,7 +123,7 @@ impl Iterator for DoublyLinkedList {
 
 impl DoubleEndedIterator for DoublyLinkedList {
     fn next_back(&mut self) -> Option<String>  {
-        self.shift()
+        self.pop()
     }
 }
 
@@ -140,6 +140,18 @@ mod tests {
             tail: node.weak()
         };
         for node in list {
+            assert_eq!(node, "first".to_string());
+        }
+    }
+
+    #[test]
+    fn doubly_linked_list_is_double_ended_iterator() {
+        let node = DoubleNode::new("first", None, None);
+        let list = DoublyLinkedList {
+            head: Some(node.refer()),
+            tail: node.weak()
+        };
+        for node in list.rev() {
             assert_eq!(node, "first".to_string());
         }
     }
