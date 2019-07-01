@@ -1,4 +1,4 @@
-use std::{ cell::RefCell, rc::{ Rc }};
+use std::{ cell::RefCell, rc::{ Rc, Weak }};
 
 use super::nodes::doubly_linked_list::{ DoubleNode, DoubleNodeRef, WeakDoubleNodeRef };
 
@@ -70,7 +70,7 @@ impl Queue for DoublyLinkedList {
 
     fn tail(&self) -> Option<DoubleNodeRef> {
         match self.tail.upgrade() {
-            Some(weak_node) => Some(weak_node),
+            Some(node) => Some(node),
             None => None
         }
     }
@@ -83,23 +83,33 @@ impl Queue for DoublyLinkedList {
     }
 
     fn pop(&mut self) -> Option<String> {
-        let current_value = match self.head() {
+        // current_value == "value"
+        let current_value = match self.tail() {
             Some(ref node) => Some(node.value()),
             None => None
         };
-        let next = match self.head() {
-            Some(ref node) => node.next(),
+        // 
+        let prev = match self.tail() {
+            Some(ref node) => node.prev(),
             None => None
         };
-        match next {
-            Some(ref node) => self.set_head(Some(node.refer())),
-            None => self.set_head(None)
+        match prev {
+            Some(ref node) => {
+                match node.upgrade() {
+                    Some(deep_node) => self.set_tail(deep_node.weak()),
+                    None => ()
+                }
+            },
+            None => self.set_tail(Weak::new())
         };
         current_value
     }
 
     fn push(&mut self, data: &str) {
-
+        if let Some(current) = self.tail() {
+            let tail = DoubleNode::new(data, None, Some(current.weak()));
+            self.set_tail(tail.weak());
+        };
     }
 }
 
@@ -161,6 +171,30 @@ mod tests {
         let third = list.shift();
         assert_eq!(third.unwrap(), "third".to_string());
         let sequence = ["second", "first"];
+        for (index, node) in list.enumerate() {
+            assert_eq!(node, sequence[index].to_string());
+        }
+    }
+
+    #[test]
+    fn push_adds_element_to_doubly_list() {
+        let mut list = DoublyLinkedList::new("first");
+        list.push("second");
+        list.push("third");
+        let sequence = ["first", "second", "third"];
+        for (index, node) in list.enumerate() {
+            assert_eq!(node, sequence[index].to_string());
+        }
+    }
+
+    #[test]
+    fn pop_removes_element_from_doubly_list() {
+        let mut list = DoublyLinkedList::new("first");
+        list.push("second");
+        list.push("third");
+        let third = list.pop();
+        assert_eq!(third.unwrap(), "third".to_string());
+        let sequence = ["first", "second"];
         for (index, node) in list.enumerate() {
             assert_eq!(node, sequence[index].to_string());
         }
