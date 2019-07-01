@@ -13,3 +13,11 @@ pub trait Stack: Iterator {
     fn shift(&mut self) -> Option<String>;
     fn unshift(&mut self, data: &str);
 }
+
+pub trait Queue: Stack {
+    type WeakReference;
+    fn tail(&self) -> Option<Self::Reference>;
+    fn set_tail(&mut self, node: Self::WeakReference);
+    fn pop(&mut self) -> Option<String>;
+    fn push(&mut self, data: &str);
+}
