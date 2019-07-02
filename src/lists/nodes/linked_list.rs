@@ -1,21 +1,55 @@
-use std::{ cell::RefCell, rc::Rc };
+use std::{ rc::Rc, cell::RefCell };
 
+use super::{ RefExt, CreateRefExt };
+
+pub type NodeRef = Rc<RefCell<Node>>;
+
+impl CreateRefExt for NodeRef {
+    type Node = Node;
+    type Reference = NodeRef;
+
+    fn from_node(node: Node) -> NodeRef {
+        Rc::new(RefCell::new(node))
+    }
+}
+
+impl RefExt for NodeRef {
+    type Reference = NodeRef;
+
+    fn next(&self) -> Option<NodeRef> {
+        self.borrow().next()
+    }
+
+    fn set_next(&mut self, next: Option<NodeRef>) {
+        self.borrow_mut().next = next;
+    }
+
+    fn value(&self) -> String {
+        self.borrow().value()
+    }
+
+    fn refer(&self) -> NodeRef {
+        Rc::clone(self)
+    }
+}
+
+#[derive(Debug)]
 pub struct Node {
     pub value: String,
-    pub next: Option<Rc<RefCell<Node>>>
+    pub next: Option<NodeRef>
 }
 
 impl Node {
-    pub fn new(value: &str, next: Option<Rc<RefCell<Node>>>) -> Node {
-        Node {
+    pub fn new(value: &str, next: Option<NodeRef>) -> NodeRef {
+        NodeRef::from_node(Node {
             value: String::from(value),
             next
-        }
+        })
     }
 
-    pub fn next(&self) -> Option<Rc<RefCell<Node>>> {
+    pub fn next(&self) -> Option<NodeRef> {
         match &self.next {
-            Some(node) => Some(Rc::clone(&node)),
+            Some(node) => Some(node.refer()),
             None => None
         }
     }
@@ -43,7 +77,7 @@ mod tests {
     #[test]
     fn new_creates_node() {
         let node = Node::new("tonia", None);
-        assert_eq!("tonia", node.value);
+        assert_eq!("tonia", node.value());
     }
 
     #[test]
@@ -54,23 +88,17 @@ mod tests {
 
     #[test]
     fn next_gives_ref() {
-        let mut node = Rc::new(RefCell::new(
-            Node::new("tonia", Some(
-                Rc::new(RefCell::new(
-                    Node::new("nic", Some(
-                        Rc::new(RefCell::new(
-                            Node::new("bill", None)
-                        ))
-                    ))
-                ))
+        let mut node = Node::new("tonia", 
+            Some(Node::new("nic", 
+                Some(Node::new("bill", None))
             ))
-        ));
+        );
 
         let names = ["tonia", "nic",  "bill"];
 
         for name in names.iter() {
-            assert_eq!(*Rc::clone(&node).borrow().value(), name.to_string());
-            match Rc::clone(&node).borrow().next() {
+            assert_eq!(*Rc::clone(&node).value(), name.to_string());
+            match Rc::clone(&node).next() {
                 Some(new_node) => node = new_node,
                 None => break
             }

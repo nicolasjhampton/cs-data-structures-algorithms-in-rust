@@ -1,5 +1,6 @@
-use std::{ cell::RefCell, rc::{ Rc, Weak } };
+use std::{ cell::RefCell, rc::{ Rc } };
 
+#[derive(Debug)]
 pub struct Node {
     pub data: usize,
     pub left: Option<Rc<RefCell<Node>>>,
@@ -15,6 +16,7 @@ impl Node {
         }
     }
 
+    #[allow(dead_code)]
     fn walk_l_d_r(&self, coll: &mut Vec<usize>) {
         match &self.left {
             Some(child) => child.borrow().walk_l_d_r(coll),
@@ -27,8 +29,9 @@ impl Node {
         };
     }
 
+    #[allow(dead_code)]
     fn insert(&mut self, node: Rc<RefCell<Node>>) {
-        if self.data <= node.borrow().data {
+        if self.data >= node.borrow().data {
             if let Some(left) = &self.left {
                 left.borrow_mut().insert(Rc::clone(&node));
             } else {
@@ -89,6 +92,7 @@ mod tests {
         }
     }
 
+    #[test]
     fn insert_keeps_binary_sort() {
         let nodes : Vec<usize> = vec![2, 5, 0, 1, 4, 6];
         let mut node3 = Node::new(3);

@@ -1,60 +1,69 @@
-use std::{ cell::RefCell, rc::{Rc, Weak}};
+use std::{ rc::{ Rc }};
 
-use super::nodes::linked_list::Node;
+use super::nodes::linked_list::{ Node, NodeRef };
 
+use super::Stack;
+
+#[derive(Debug)]
 pub struct LinkedList {
-    pub head: RefCell<Weak<RefCell<Node>>>,
-    pub curr: Option<Rc<RefCell<Node>>>
+    pub head: Option<NodeRef>
 }
 
 impl LinkedList {
     #[allow(dead_code)]
     fn new(start: &str) -> LinkedList {
-        let tail = Rc::new(RefCell::new(Node::new(start, None)));
+        let tail = Node::new(start, None);
         LinkedList {
-            head: RefCell::new(Rc::downgrade(&tail)),
-            curr: Some(tail)
+            head: Some(tail)
         }
-    }
-
-    #[allow(dead_code)]
-    fn add(&mut self, new_head: &str) {
-        let next = match self.curr {
-            Some(ref curr) => Some(Rc::clone(curr)),
-            None => None
-        };
-        let head_node = Node::new(new_head, next);
-        let head_ref = Rc::new(RefCell::new(head_node));
-        *self.head.borrow_mut() = Rc::downgrade(&head_ref);
-    }
-
-    fn remove(&mut self) {
-        let next = match self.curr {
-            Some(ref node) => node.borrow().next(),
-            None => None
-        };
-        if let Some(node) = next {
-            *self.head.borrow_mut() = Rc::downgrade(&node);
-            self.curr = Some(node);
-        };
     }
 }
 
 impl Iterator for LinkedList {
-    type Item = Rc<RefCell<Node>>;
+    type Item = String;
 
-    fn next(&mut self) -> Option<Rc<RefCell<Node>>>  {
-        self.curr = match self.curr {
-            Some(ref curr) => curr.borrow().next(),
-            None => None
-        };
-        match self.curr {
-            Some(ref curr) => Some(Rc::clone(&curr)),
-            None => None
-        }
+    fn next(&mut self) -> Option<String>  {
+        self.shift()
     }
 }
 
+impl Stack for LinkedList {
+
+    type Reference = NodeRef;
+
+    fn set_head(&mut self, node: Option<NodeRef>) {
+        self.head = node;
+    }
+
+    fn head(&self) -> Option<NodeRef> {
+        match self.head {
+            Some(ref head) => Some(Rc::clone(head)),
+            None => None
+        }
+    }
+
+    fn unshift(&mut self, data: &str) {
+        if let Some(head) = self.head() {
+            self.set_head(Some(Node::new(data, Some(head))));
+        };
+    }
+
+    fn shift(&mut self) -> Option<String> {
+        let current_value = match self.head() {
+            Some(ref node) => Some(node.borrow().value()),
+            None => None
+        };
+        let next = match self.head() {
+            Some(ref node) => node.borrow().next(),
+            None => None
+        };
+        match next {
+            Some(ref node) => self.set_head(Some(Rc::clone(node))),
+            None => self.set_head(None)
+        };
+        current_value
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -62,13 +71,12 @@ mod tests {
 
     #[test]
     fn linked_list_is_iterator() {
-        let node = Rc::new(RefCell::new(Node::new("first", None)));
+        let node = Node::new("first", None);
         let list = LinkedList {
-            head: RefCell::new(Rc::downgrade(&node)),
-            curr: Some(node)
+            head: Some(node)
         };
         for node in list {
-            assert_eq!(*node.borrow().value(), "first".to_string());
+            assert_eq!(node, "first".to_string());
         }
     }
 
@@ -76,30 +84,31 @@ mod tests {
     fn new_creates_linked_list() {
         let list = LinkedList::new("first");
         for node in list {
-            assert_eq!(*node.borrow().value(), "first".to_string());
+            assert_eq!(node, "first".to_string());
         }
     }
 
     #[test]
-    fn add_adds_element_to_list() {
+    fn unshift_adds_element_to_list() {
         let mut list = LinkedList::new("first");
-        list.add("second");
-        list.add("third");
+        list.unshift("second");
+        list.unshift("third");
         let sequence = ["third", "second", "first"];
         for (index, node) in list.enumerate() {
-            assert_eq!(*node.borrow().value(), sequence[index].to_string());
+            assert_eq!(node, sequence[index].to_string());
         }
     }
 
     #[test]
-    fn remove_erases_element_from_list() {
+    fn remove_removes_element_from_list() {
         let mut list = LinkedList::new("first");
-        list.add("second");
-        list.add("third");
-        list.remove();
+        list.unshift("second");
+        list.unshift("third");
+        let third = list.shift();
+        assert_eq!(third.unwrap(), "third".to_string());
         let sequence = ["second", "first"];
         for (index, node) in list.enumerate() {
-            assert_eq!(*node.borrow().value(), sequence[index].to_string());
+            assert_eq!(node, sequence[index].to_string());
         }
     }
 }
