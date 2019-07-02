@@ -2,7 +2,7 @@ use std::{ cell::RefCell, rc::{ Rc, Weak }};
 
 use super::nodes::doubly_linked_list::{ DoubleNode, DoubleNodeRef, WeakDoubleNodeRef };
 
-use super::nodes::{ RefExt, DoubleRefExt, CreateDoubleRefExt };
+use super::nodes::{ RefExt, DoubleRefExt };
 
 use super::{ Stack, Queue };
 

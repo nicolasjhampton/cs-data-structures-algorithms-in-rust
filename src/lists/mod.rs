@@ -2,9 +2,6 @@ mod nodes;
 pub mod linked;
 pub mod doubly_linked;
 
-use nodes::linked_list::Node;
-use std::{ cell::RefCell, rc::{Rc}};
-
 
 pub trait Stack: Iterator {
     type Reference;
