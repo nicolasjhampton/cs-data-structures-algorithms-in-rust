@@ -1,6 +1,8 @@
 pub mod linked_list;
 pub mod doubly_linked_list;
 
+use std::{ rc::Rc, cell::RefCell };
+
 pub trait RefExt {
     type Reference;
     fn value(&self) -> String;
@@ -19,12 +21,5 @@ pub trait DoubleRefExt: RefExt {
 pub trait CreateRefExt {
     type Node;
     type Reference;
-    fn from_node(node: Self::Node) -> Self::Reference;
-}
-
-pub trait CreateDoubleRefExt {
-    type Node;
-    type Reference;
-    type WeakReference;
     fn from_node(node: Self::Node) -> Self::Reference;
 }

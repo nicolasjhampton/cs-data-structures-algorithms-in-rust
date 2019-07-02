@@ -1,12 +1,11 @@
 use std::{ cell::RefCell, rc::{ Rc, Weak } };
 
-use super::{ RefExt, DoubleRefExt, CreateDoubleRefExt };
+use super::{ RefExt, DoubleRefExt, CreateRefExt };
 
 pub type DoubleNodeRef = Rc<RefCell<DoubleNode>>;
 pub type WeakDoubleNodeRef = Weak<RefCell<DoubleNode>>;
 
-impl CreateDoubleRefExt for DoubleNodeRef {
-    type WeakReference = WeakDoubleNodeRef;
+impl CreateRefExt for DoubleNodeRef {
     type Reference = DoubleNodeRef;
     type Node = DoubleNode;
 
