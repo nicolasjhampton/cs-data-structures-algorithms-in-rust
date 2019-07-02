@@ -23,6 +23,20 @@ impl DoublyLinkedList {
     }
 }
 
+impl Iterator for DoublyLinkedList {
+    type Item = String;
+
+    fn next(&mut self) -> Option<String>  {
+        self.shift()
+    }
+}
+
+impl DoubleEndedIterator for DoublyLinkedList {
+    fn next_back(&mut self) -> Option<String>  {
+        self.pop()
+    }
+}
+
 impl Stack for DoublyLinkedList {
 
     type Reference = DoubleNodeRef;
@@ -112,21 +126,6 @@ impl Queue for DoublyLinkedList {
         };
     }
 }
-
-impl Iterator for DoublyLinkedList {
-    type Item = String;
-
-    fn next(&mut self) -> Option<String>  {
-        self.shift()
-    }
-}
-
-impl DoubleEndedIterator for DoublyLinkedList {
-    fn next_back(&mut self) -> Option<String>  {
-        self.pop()
-    }
-}
-
 
 #[cfg(test)]
 mod tests {

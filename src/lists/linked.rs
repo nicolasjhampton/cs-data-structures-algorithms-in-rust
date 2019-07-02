@@ -19,6 +19,14 @@ impl LinkedList {
     }
 }
 
+impl Iterator for LinkedList {
+    type Item = String;
+
+    fn next(&mut self) -> Option<String>  {
+        self.shift()
+    }
+}
+
 impl Stack for LinkedList {
 
     type Reference = NodeRef;
@@ -56,15 +64,6 @@ impl Stack for LinkedList {
         current_value
     }
 }
-
-impl Iterator for LinkedList {
-    type Item = String;
-
-    fn next(&mut self) -> Option<String>  {
-        self.shift()
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
