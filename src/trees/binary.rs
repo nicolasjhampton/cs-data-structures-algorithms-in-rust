@@ -13,7 +13,8 @@ impl BinaryTree {
     fn new(start: &str) -> BinaryTree {
         let root = Node::new(start);
         BinaryTree {
-            root: Some(root)
+            root: Some(Rc::clone(&root)),
+            curr: Some(Rc::clone(&root))
         }
     }
 
@@ -79,46 +80,51 @@ impl BinaryTree {
 mod tests {
     use super::*;
 
-    #[test]
-    fn linked_list_is_iterator() {
-        let node = Node::new("first", None);
-        let list = LinkedList {
-            head: Some(node)
-        };
-        for node in list {
-            assert_eq!(node, "first".to_string());
-        }
-    }
+    // #[test]
+    // #[ignore]
+    // fn binary_tree_is_iterator() {
+    //     let node = Node::new("first", None);
+    //     let list = BinaryTree {
+    //         head: Some(Rc::clone(node)),
+    //         curr: Some(Rc::clone(node))
+    //     };
+    //     for node in list {
+    //         assert_eq!(node, "first".to_string());
+    //     }
+    // }
 
-    #[test]
-    fn new_creates_linked_list() {
-        let list = LinkedList::new("first");
-        for node in list {
-            assert_eq!(node, "first".to_string());
-        }
-    }
+    // #[test]
+    // #[ignore]
+    // fn new_creates_linked_list() {
+    //     let list = BinaryTree::new("first");
+    //     for node in list {
+    //         assert_eq!(node, "first".to_string());
+    //     }
+    // }
 
-    #[test]
-    fn unshift_adds_element_to_list() {
-        let mut list = LinkedList::new("first");
-        list.unshift("second");
-        list.unshift("third");
-        let sequence = ["third", "second", "first"];
-        for (index, node) in list.enumerate() {
-            assert_eq!(node, sequence[index].to_string());
-        }
-    }
+    // #[test]
+    // #[ignore]
+    // fn unshift_adds_element_to_list() {
+    //     let mut list = BinaryTree::new("first");
+    //     list.unshift("second");
+    //     list.unshift("third");
+    //     let sequence = ["third", "second", "first"];
+    //     for (index, node) in list.enumerate() {
+    //         assert_eq!(node, sequence[index].to_string());
+    //     }
+    // }
 
-    #[test]
-    fn remove_removes_element_from_list() {
-        let mut list = LinkedList::new("first");
-        list.unshift("second");
-        list.unshift("third");
-        let third = list.shift();
-        assert_eq!(third.unwrap(), "third".to_string());
-        let sequence = ["second", "first"];
-        for (index, node) in list.enumerate() {
-            assert_eq!(node, sequence[index].to_string());
-        }
-    }
+    // #[test]
+    // #[ignore]
+    // fn remove_removes_element_from_list() {
+    //     let mut list = BinaryTree::new("first");
+    //     list.unshift("second");
+    //     list.unshift("third");
+    //     let third = list.shift();
+    //     assert_eq!(third.unwrap(), "third".to_string());
+    //     let sequence = ["second", "first"];
+    //     for (index, node) in list.enumerate() {
+    //         assert_eq!(node, sequence[index].to_string());
+    //     }
+    // }
 }
