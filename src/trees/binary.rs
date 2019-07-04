@@ -1,42 +1,58 @@
-use std::{ rc::{ Rc }};
+use std::{ thread, rc::{ Rc }};
 
-use super::nodes::binary_tree::{ Node, NodeRef };
+use std::sync::Arc;
+
+use std::sync::mpsc::{Sender, Receiver, channel};
+
+use super::nodes::{ RefExt, binary_tree::{ Node, NodeRef }};
 
 #[derive(Debug)]
 pub struct BinaryTree {
-    pub root: Option<NodeRef>,
-    curr: Option<NodeRef>
+    // pub root: Option<NodeRef>,
+    // curr: Option<NodeRef>,
+    iter: Receiver<String>
 }
 
 impl BinaryTree {
     #[allow(dead_code)]
     fn new(start: &str) -> BinaryTree {
-        let root = Node::new(start);
+        let (tx, rx) = channel();
+        let string_start = start.to_string();
+        thread::spawn(|| {
+            let root = Node {
+                data: string_start,
+                left: None,
+                right: None
+            };
+            root.depth_walk(tx);
+        });
         BinaryTree {
-            root: Some(Rc::clone(&root)),
-            curr: Some(Rc::clone(&root))
+            iter: rx
         }
     }
 
-    fn set_curr(&mut self, node: Option<NodeRef>) {
-        self.curr = node;
-    }
+    // fn set_curr(&mut self, node: Option<NodeRef>) {
+    //     self.curr = node;
+    // }
 
-    fn curr(&self) -> Option<NodeRef> {
-        match self.curr {
-            Some(ref curr) => Some(Rc::clone(curr)),
-            None => None
+    // fn curr(&self) -> Option<NodeRef> {
+    //     match self.curr {
+    //         Some(ref curr) => Some(Rc::clone(curr)),
+    //         None => None
+    //     }
+    // }
+}
+
+impl Iterator for BinaryTree {
+    type Item = String;
+
+    fn next(&mut self) -> Option<String>  {
+        match self.iter.recv() {
+            Ok(value) => Some(value),
+            _ => None
         }
     }
 }
-
-// impl Iterator for LinkedList {
-//     type Item = String;
-
-//     fn next(&mut self) -> Option<String>  {
-//         self.shift()
-//     }
-// }
 
 // impl  LinkedList {
 
@@ -80,14 +96,23 @@ impl BinaryTree {
 mod tests {
     use super::*;
 
+    #[test]
+    fn binary_tree_is_iterator() {
+        let list = BinaryTree::new("first");
+        // let list = BinaryTree {
+        //     root: Some(Rc::clone(&node)),
+        //     curr: Some(Rc::clone(&node)),
+        //     switch: true
+        // };
+        for node in list {
+            assert_eq!(node, "first".to_string());
+        }
+    }
+
     // #[test]
-    // #[ignore]
-    // fn binary_tree_is_iterator() {
-    //     let node = Node::new("first", None);
-    //     let list = BinaryTree {
-    //         head: Some(Rc::clone(node)),
-    //         curr: Some(Rc::clone(node))
-    //     };
+    // fn binary_tree_walks_l_d_r_walks_correctly() {
+    //     let list = BinaryTree::new("first");
+    //     list.
     //     for node in list {
     //         assert_eq!(node, "first".to_string());
     //     }

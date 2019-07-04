@@ -1,4 +1,4 @@
-use std::{ rc::Rc, cell::RefCell };
+use std::{ thread, sync::mpsc::{ channel, Sender }, rc::Rc, cell::RefCell };
 
 use super::{ CreateRefExt, RefExt };
 
@@ -41,7 +41,7 @@ impl RefExt for NodeRef {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     pub data: String,
     pub left: Option<NodeRef>,
@@ -75,35 +75,35 @@ impl Node {
         }
     }
 
-    // #[allow(dead_code)]
-    // fn walk_l_d_r(&self, coll: &mut Vec<String>) {
-    //     match &self.left {
-    //         Some(child) => child.borrow().walk_l_d_r(coll),
-    //         None => ()
-    //     };
-    //     coll.push(self.data.clone());
-    //     match &self.right {
-    //         Some(child) => child.borrow().walk_l_d_r(coll),
-    //         None => ()
-    //     };
-    // }
+    #[allow(dead_code)]
+    fn insert(&mut self, node: NodeRef) {
+        if self.data >= node.borrow().data {
+            if let Some(left) = &self.left {
+                left.borrow_mut().insert(Rc::clone(&node));
+            } else {
+                self.left = Some(Rc::clone(&node));
+            }
+        } else {
+            if let Some(right) = &self.right {
+                right.borrow_mut().insert(Rc::clone(&node));
+            } else {
+                self.right = Some(Rc::clone(&node));
+            }
+        }
+    }
 
-    // #[allow(dead_code)]
-    // fn insert(&mut self, node: NodeRef) {
-    //     if self.data >= node.borrow().data {
-    //         if let Some(left) = &self.left {
-    //             left.borrow_mut().insert(Rc::clone(&node));
-    //         } else {
-    //             self.left = Some(Rc::clone(&node));
-    //         }
-    //     } else {
-    //         if let Some(right) = &self.right {
-    //             right.borrow_mut().insert(Rc::clone(&node));
-    //         } else {
-    //             self.right = Some(Rc::clone(&node));
-    //         }
-    //     }
-    // }
+    #[allow(dead_code)]
+    pub fn depth_walk(&self, pipe: Sender<String>) {
+        match &self.left {
+            Some(child) => child.borrow().depth_walk(Sender::clone(&pipe)),
+            None => ()
+        };
+        pipe.send(self.value()).unwrap();
+        match &self.right {
+            Some(child) => child.borrow().depth_walk(Sender::clone(&pipe)),
+            None => ()
+        };
+    }
 }
 
 #[cfg(test)]
@@ -151,17 +151,23 @@ mod tests {
     //     }
     // }
 
-    // #[test]
-    // fn insert_keeps_binary_sort() {
-    //     let nodes : Vec<usize> = vec![2, 5, 0, 1, 4, 6];
-    //     let mut node3 = Node::new("3");
-    //     for i in nodes.iter() {
-    //         node3.insert(Rc::new(RefCell::new(Node::new(&i.to_string()))));
-    //     }
-    //     let mut arr : Vec<String> = Vec::new();
-    //     node3.walk_l_d_r(&mut arr);
-    //     for (i, j) in arr.iter().enumerate() {
-    //         assert_eq!(i.to_string(), *j);
-    //     }
-    // }
+    #[test]
+    fn insert_keeps_binary_sort() {
+        let mut i = 0;
+        let (tx, rx) = channel();
+        let aought_to_be_nodes : Vec<usize> = vec![0, 1, 2, 3, 4, 5, 6];
+        thread::spawn(move || {
+            let nodes : Vec<usize> = vec![2, 5, 0, 1, 4, 6];
+            let node = Node::new("3");
+            for i in nodes.iter() {
+                node.borrow_mut().insert(Node::new(&i.to_string()));
+            }
+            node.clone().borrow().depth_walk(tx);
+        });
+        for value in rx {
+            println!("{:#?}", value);
+            assert_eq!(aought_to_be_nodes[i].to_string(), value);
+            i += 1;
+        }
+    }
 }
