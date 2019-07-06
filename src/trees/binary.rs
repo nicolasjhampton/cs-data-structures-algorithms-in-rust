@@ -4,10 +4,12 @@ use std::sync::mpsc::{Sender, Receiver, channel};
 
 use super::nodes::{ RefExt, binary_tree::{ Node, NodeRef }};
 
+use crate::lists::{ Stack, Queue, doubly_linked::DoublyLinkedList as QueueList };
+
 #[derive(Debug)]
 pub struct BinaryTree {
     pub root: NodeRef,
-    iter: Option<RefCell<Vec<String>>>
+    iter: Option<RefCell<QueueList>>
 }
 
 impl BinaryTree {
@@ -25,7 +27,7 @@ impl BinaryTree {
     }
 
     fn to_iter(&mut self) {
-        let mut coll = Vec::new();
+        let mut coll = QueueList::new();
         self.root.borrow().depth_walk(&mut coll);
         self.iter = Some(RefCell::new(coll));
     }
@@ -36,8 +38,8 @@ impl Iterator for BinaryTree {
     type Item = String;
 
     fn next(&mut self) -> Option<String>  {
-        match self.iter {
-            Some(ref iter) => iter.borrow_mut().pop(),
+        match &self.iter {
+            Some(iter) => iter.borrow_mut().shift(),
             None => {
                 self.to_iter();
                 self.next()
@@ -57,7 +59,7 @@ mod tests {
         list.add("c");
         list.add("b");
         list.add("zz");
-        let answers = ["zz", "first", "c", "b", "a"];
+        let answers = ["a", "b", "c", "first", "zz"];
         for (index, node) in list.enumerate() {
             assert_eq!(node, answers[index].to_string());
         }

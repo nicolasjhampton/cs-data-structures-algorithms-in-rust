@@ -1,5 +1,7 @@
 use std::{ thread, sync::mpsc::{ channel, Sender }, rc::Rc, cell::RefCell };
 
+use crate::lists::{ Queue, doubly_linked::DoublyLinkedList as QueueList };
+
 use super::{ CreateRefExt, RefExt };
 
 pub type NodeRef = Rc<RefCell<Node>>;
@@ -93,12 +95,12 @@ impl Node {
     }
 
     #[allow(dead_code)]
-    pub fn depth_walk(&self, coll: &mut Vec<String>) {
+    pub fn depth_walk(&self, coll: &mut QueueList) {
         match &self.left {
             Some(child) => child.borrow().depth_walk(coll),
             None => ()
         };
-        coll.push(self.value());
+        coll.push(&self.value());
         match &self.right {
             Some(child) => child.borrow().depth_walk(coll),
             None => ()
@@ -135,9 +137,9 @@ mod tests {
         for i in nodes.iter() {
             node.borrow_mut().insert(Node::new(&i.to_string()));
         }
-        let mut coll = Vec::new();
+        let mut coll = QueueList::new();
         node.clone().borrow().depth_walk(&mut coll);
-        for (index, value) in coll.iter().enumerate() {
+        for (index, value) in coll.enumerate() {
             println!("{:#?}", value);
             assert_eq!(index.to_string(), *value);
         }

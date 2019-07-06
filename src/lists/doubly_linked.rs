@@ -14,11 +14,10 @@ pub struct DoublyLinkedList {
 
 impl DoublyLinkedList {
     #[allow(dead_code)]
-    fn new(start: &str) -> DoublyLinkedList {
-        let node = DoubleNode::new(start, None, None);
+    pub fn new() -> DoublyLinkedList {
         DoublyLinkedList {
-            head: Some(node.refer()),
-            tail: node.weak()
+            head: None,
+            tail: Weak::new()
         }
     }
 }
@@ -57,9 +56,17 @@ impl Stack for DoublyLinkedList {
     }
 
     fn unshift(&mut self, data: &str) {
-        if let Some(current) = self.head() {
-            self.set_head(Some(DoubleNode::new(data, Some(current), None)));
-        };
+        match self.head() {
+            Some(current) => {
+                let head = DoubleNode::new(data, Some(current), None);
+                self.set_head(Some(head));
+            },
+            None => {
+                let head = DoubleNode::new(data, None, None);
+                self.set_tail(head.weak());
+                self.set_head(Some(head));
+            }
+        }
     }
 
     fn shift(&mut self) -> Option<String> {
@@ -120,10 +127,17 @@ impl Queue for DoublyLinkedList {
     }
 
     fn push(&mut self, data: &str) {
-        if let Some(current) = self.tail() {
-            let tail = DoubleNode::new(data, None, Some(current.weak()));
-            self.set_tail(tail.weak());
-        };
+        match self.tail() {
+            Some(current) => {
+                let tail = DoubleNode::new(data, None, Some(current.weak()));
+                self.set_tail(tail.weak());
+            },
+            None => {
+                let tail = DoubleNode::new(data, None, None);
+                self.set_tail(tail.weak());
+                self.set_head(Some(tail));
+            }
+        }
     }
 }
 
@@ -157,7 +171,8 @@ mod tests {
 
     #[test]
     fn new_creates_doubly_linked_list() {
-        let list = DoublyLinkedList::new("first");
+        let mut list = DoublyLinkedList::new();
+        list.push("first");
         for node in list {
             assert_eq!(node, "first".to_string());
         }
@@ -165,7 +180,8 @@ mod tests {
 
     #[test]
     fn unshift_adds_element_to_doubly_list() {
-        let mut list = DoublyLinkedList::new("first");
+        let mut list = DoublyLinkedList::new();
+        list.unshift("first");
         list.unshift("second");
         list.unshift("third");
         let sequence = ["third", "second", "first"];
@@ -176,7 +192,8 @@ mod tests {
 
     #[test]
     fn shift_removes_element_from_doubly_list() {
-        let mut list = DoublyLinkedList::new("first");
+        let mut list = DoublyLinkedList::new();
+        list.unshift("first");
         list.unshift("second");
         list.unshift("third");
         let third = list.shift();
@@ -189,7 +206,8 @@ mod tests {
 
     #[test]
     fn push_adds_element_to_doubly_list() {
-        let mut list = DoublyLinkedList::new("first");
+        let mut list = DoublyLinkedList::new();
+        list.push("first");
         list.push("second");
         list.push("third");
         let sequence = ["first", "second", "third"];
@@ -200,7 +218,8 @@ mod tests {
 
     #[test]
     fn pop_removes_element_from_doubly_list() {
-        let mut list = DoublyLinkedList::new("first");
+        let mut list = DoublyLinkedList::new();
+        list.push("first");
         list.push("second");
         list.push("third");
         let third = list.pop();
