@@ -14,7 +14,7 @@ pub struct BinaryTree {
 
 impl BinaryTree {
     #[allow(dead_code)]
-    fn new(start: &str) -> BinaryTree {
+    pub fn new(start: &str) -> BinaryTree {
         let node = Node::new(start);
         BinaryTree {
             root: node,
@@ -22,7 +22,7 @@ impl BinaryTree {
         }
     }
 
-    fn add(&mut self, new: &str) {
+    pub fn add(&mut self, new: &str) {
         self.root.borrow_mut().insert(Node::new(new));
     }
 
