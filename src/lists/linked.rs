@@ -11,10 +11,9 @@ pub struct LinkedList {
 
 impl LinkedList {
     #[allow(dead_code)]
-    fn new(start: &str) -> LinkedList {
-        let tail = Node::new(start, None);
+    fn new() -> LinkedList {
         LinkedList {
-            head: Some(tail)
+            head: None
         }
     }
 }
@@ -43,9 +42,16 @@ impl Stack for LinkedList {
     }
 
     fn unshift(&mut self, data: &str) {
-        if let Some(head) = self.head() {
-            self.set_head(Some(Node::new(data, Some(head))));
-        };
+        match self.head() {
+            Some(head) => {
+                let node = Node::new(data, Some(head));
+                self.set_head(Some(node));
+            },
+            None => {
+                let node = Node::new(data, None);
+                self.set_head(Some(node));
+            }
+        }
     }
 
     fn shift(&mut self) -> Option<String> {
@@ -82,7 +88,8 @@ mod tests {
 
     #[test]
     fn new_creates_linked_list() {
-        let list = LinkedList::new("first");
+        let mut list = LinkedList::new();
+        list.unshift("first");
         for node in list {
             assert_eq!(node, "first".to_string());
         }
@@ -90,7 +97,8 @@ mod tests {
 
     #[test]
     fn unshift_adds_element_to_list() {
-        let mut list = LinkedList::new("first");
+        let mut list = LinkedList::new();
+        list.unshift("first");
         list.unshift("second");
         list.unshift("third");
         let sequence = ["third", "second", "first"];
@@ -101,7 +109,8 @@ mod tests {
 
     #[test]
     fn remove_removes_element_from_list() {
-        let mut list = LinkedList::new("first");
+        let mut list = LinkedList::new();
+        list.unshift("first");
         list.unshift("second");
         list.unshift("third");
         let third = list.shift();
