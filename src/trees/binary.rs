@@ -1,10 +1,8 @@
-use std::{ cell::RefCell, rc::{ Rc }};
+use std::cell::RefCell;
 
-use std::sync::mpsc::{Sender, Receiver, channel};
+use super::nodes::binary_tree::{ Node, NodeRef };
 
-use super::nodes::{ RefExt, binary_tree::{ Node, NodeRef }};
-
-use crate::lists::{ Stack, Queue, doubly_linked::DoublyLinkedList as QueueList };
+use crate::lists::{ Stack, doubly_linked::DoublyLinkedList as QueueList };
 
 #[derive(Debug)]
 pub struct BinaryTree {

@@ -1,4 +1,4 @@
-use std::{ thread, sync::mpsc::{ channel, Sender }, rc::Rc, cell::RefCell };
+use std::{ rc::Rc, cell::RefCell };
 
 use crate::lists::{ Queue, doubly_linked::DoublyLinkedList as QueueList };
 
@@ -131,7 +131,6 @@ mod tests {
 
     #[test]
     fn insert_keeps_binary_sort() {
-        let aought_to_be_nodes : Vec<usize> = vec![0, 1, 2, 3, 4, 5, 6];
         let nodes : Vec<usize> = vec![2, 5, 0, 1, 4, 6];
         let node = Node::new("3");
         for i in nodes.iter() {

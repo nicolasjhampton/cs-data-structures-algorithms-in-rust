@@ -12,7 +12,6 @@ pub struct LinkedList {
 impl LinkedList {
     #[allow(dead_code)]
     fn new() -> LinkedList {
-        // let tail = Node::new(start, None);
         LinkedList {
             head: None
         }
