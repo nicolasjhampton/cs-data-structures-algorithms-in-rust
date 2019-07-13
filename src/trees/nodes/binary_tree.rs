@@ -2,7 +2,7 @@ use std::{ rc::Rc, cell::RefCell };
 
 use crate::lists::{ Queue, doubly_linked::DoublyLinkedList as QueueList };
 
-use super::{ CreateRefExt, RefExt };
+use super::{ CreateRefExt, RefExt, TreeNode };
 
 pub type NodeRef = Rc<RefCell<Node>>;
 
@@ -50,14 +50,8 @@ pub struct Node {
     pub right: Option<NodeRef>
 }
 
-impl Node {
-    pub fn new(data: &str) -> NodeRef {
-        NodeRef::from_node(Node {
-            data: String::from(data),
-            left: None,
-            right: None,
-        })
-    }
+impl TreeNode for Node {
+    type Reference = NodeRef;
 
     fn value(&self) -> String {
         self.data.clone()
@@ -70,6 +64,10 @@ impl Node {
         }
     }
 
+    fn set_left(&mut self, left: Option<NodeRef>) {
+        self.left = left;
+    }
+
     fn right(&self) -> Option<NodeRef> {
         match &self.right {
             Some(ref child) => Some(child.refer()),
@@ -77,19 +75,51 @@ impl Node {
         }
     }
 
+    fn set_right(&mut self, right: Option<NodeRef>) {
+        self.right = right;
+    }
+}
+
+impl Node {
+    pub fn new(data: &str) -> NodeRef {
+        NodeRef::from_node(Node {
+            data: String::from(data),
+            left: None,
+            right: None,
+        })
+    }
+
+    // fn value(&self) -> String {
+    //     self.data.clone()
+    // }
+
+    // fn left(&self) -> Option<NodeRef> {
+    //     match &self.left {
+    //         Some(ref child) => Some(child.refer()),
+    //         None => None
+    //     }
+    // }
+
+    // fn right(&self) -> Option<NodeRef> {
+    //     match &self.right {
+    //         Some(ref child) => Some(child.refer()),
+    //         None => None
+    //     }
+    // }
+
     #[allow(dead_code)]
     pub fn insert(&mut self, node: NodeRef) {
         if self.data >= node.borrow().data {
-            if let Some(left) = &self.left {
+            if let Some(left) = self.left() {
                 left.borrow_mut().insert(Rc::clone(&node));
             } else {
-                self.left = Some(Rc::clone(&node));
+                self.set_left(Some(Rc::clone(&node)));
             }
         } else {
-            if let Some(right) = &self.right {
+            if let Some(right) = self.right() {
                 right.borrow_mut().insert(Rc::clone(&node));
             } else {
-                self.right = Some(Rc::clone(&node));
+                self.set_right(Some(Rc::clone(&node)));
             }
         }
     }
