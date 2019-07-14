@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use super::nodes::binary_tree::{ Node, NodeRef };
+use super::nodes::{ BinaryNode, node::Node, node_ref::NodeRef };
 
 use crate::lists::{ Stack, doubly_linked::DoublyLinkedList as QueueList };
 
